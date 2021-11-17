@@ -1,0 +1,67 @@
+# WIP - Instance fails
+
+pause () {
+    ls
+    echo "\npress [Enter] to  continue..."
+    read REPLY
+}
+
+python3 -m pip install -U pip
+python3 -m pip install pipenv
+brew install jq
+pause
+
+projectName="learn-cdktf-python-pipenv"
+mkdir $projectName
+cd $projectName
+cdktf init --template="python" --local
+
+echo 'Default cdktf.json'
+cat cdktf.json
+pause
+echo "Adding AWS terraform provider..."
+cat cdktf.json | jq '.terraformProviders += ["hashicorp/aws@~>3.42"]' > cdktf.json.tmp
+mv cdktf.json.tmp cdktf.json
+cat cdktf.json
+pause
+
+cdktf get # this takes a while - typescript is faster
+
+echo 'Default main.py file'
+cat main.py
+echo 'Replacing main.py with'
+cat << EOF > main.py
+from constructs import Construct
+from cdktf import App, TerraformStack, TerraformOutput
+from imports.aws import AwsProvider, ec2
+
+
+class MyStack(TerraformStack):
+
+    def __init__(self, scope: Construct, ns: str):
+        super().__init__(scope, ns)
+
+        AwsProvider(self, 'Aws', region='us-west-1')
+
+        instance = ec2.Instance(self, 'hello',
+            ami='ami-01456a894f71116f2',
+            instance_type='t2.micro',
+        )
+
+        TerraformOutput(self, 'hello_public_ip',
+            value=instance.public_ip
+        )
+
+app = App();
+MyStack(app, 'typescript-aws')
+app.synth()
+EOF
+cat main.py
+pause
+
+cdktf synth
+cat cdktf.out/stacks/typescript-aws/cdk.tf.json
+pause
+
+cd ..
+rm -rf $projectName
