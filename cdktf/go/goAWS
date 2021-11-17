@@ -1,4 +1,4 @@
-# WIP - Instance fails
+# WIP - Docker provider fails
 
 pause () {
     ls
