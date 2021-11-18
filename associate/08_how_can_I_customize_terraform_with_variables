@@ -129,4 +129,4 @@ terraform plan
 
 terraform plan -var='resource_tags={project="my-project",environment="development"}'
 
-terraform destory
+terraform destroy
