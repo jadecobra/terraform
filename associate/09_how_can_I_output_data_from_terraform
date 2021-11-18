@@ -1,0 +1,57 @@
+source helper
+
+git clone https://github.com/hashicorp/learn-terraform-outputs.git
+cd learn-terraform-outputs
+
+terraform init
+
+display main.tf
+display variables.tf
+
+terraform plan
+
+cat << EOF >> outputs.tf
+output "vpc_id" {
+    description = "ID of project VPC"
+    value       = module.vpc.vpc_id
+}
+
+output "lb_url" {
+    description = "URL of load balancer"
+    value = "http://${module.elb_http.this_elb_dns_name}/"
+}
+
+output "web_server_count" {
+    description = "Number of web servers provisioned"
+    value = length(module.ec2_instances.instance_ids)
+}
+
+output "db_username" {
+    description = "Database administrator username"
+    value       = aws_db_instance.database.username
+    sensitive   = true
+}
+
+outout "db_password" {
+    description = "Database administrator password"
+    value       = aws_db_instance.database.password
+    sensitive   = true
+}
+EOF
+display outputs.tf
+
+terraform plan
+pause
+
+echo "Displaying All terraform Output..."
+terraform output
+pause
+
+echo "Query individual output by name..."
+terraform output lb_url
+terraform output -raw lb_url
+terraform output db_password
+pause
+
+echo 'Displaying Terraform output as json'
+terraform output -json

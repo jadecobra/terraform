@@ -1,0 +1,78 @@
+terraform {
+    backend "remote" {
+        organization = organization_name
+        workspaces {
+            name = workspace_name
+        }
+    }
+    required_providers {
+        provider_name = {
+            source  = "hashicorp/{provider_name}"
+            version = "~> {provider_version}"
+        }
+    }
+    required_version = ">= {terraform_version}"
+}
+
+provider provider_name {
+    profile = "default"
+    region  = "us-west-2"
+}
+
+resource "{provider_name}_{resource_type}" resource_name {
+    parameter1 = value1
+    parameter2 = value2
+    parameter3 = value3
+    parameterN = {
+        key1 = value1
+    }
+}
+
+resource_id = "{provider_name}_{resource_type}.{resource_name}"
+
+variable variable_name {
+    description = variable_description
+    type        = string | number | bool | list | set | map | object | tuple | map
+                  list(string | number | bool | list | set | map | object | tuple | map) |
+                  setstring | number | bool | list | set | map | object | tuple | map) |
+                  map(string | number | bool | list | set | map | object | tuple | map) |
+                  object({key1=value1, ...keyN=valueN}) |
+                  tuple([string | number | bool | list | set | map | object | tuple | map,...]) |
+                  any
+    default     = default_value
+    sensitive   = true | false
+    validation {
+        condition = condition
+        error_message = error_message
+    }
+}
+
+# how to reference a variable
+provider provider_name {
+    parameter1 = var.variable_name
+}
+
+module module_name {
+    source = module_source
+    version = module_version
+    parameter = var.variable_name
+}
+
+# how to index a list variable
+var.list_variable[index]
+slict(var.list_variable, start, end+1)
+
+# how can I interpolate strings with a variable
+reference = "literal ${var.variable_name}"
+
+data "{provider_name}_{resource_type}" "{data_source_name}" {
+    parameter1 = value1
+    parameter2 = value2
+    parameter3 = value3
+    parameterN = {
+        key1 = value1
+    }
+}
+
+# how can I reference data source attributes
+data.{provider_name}_{resource_type}.{data_source_name}.{attribute_name}
