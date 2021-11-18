@@ -6,6 +6,7 @@ cd learn-terraform-data-sources-vpc
 display main.tf
 terraform init
 cat << EOF >> main.tf
+
 data "aws_availability_zones" "available" {
     state = "available"
 }
@@ -21,6 +22,7 @@ display main.tf
 
 terraform init
 cat << EOF >> main.tf
+
 data "terrafrom_remote_state" "vpc" {
     backend = "local"
 
