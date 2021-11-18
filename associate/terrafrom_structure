@@ -57,3 +57,10 @@ module module_name {
     version = module_version
     parameter = var.variable_name
 }
+
+# how to index a list variable
+var.list_variable[index]
+slict(var.list_variable, start, end+1)
+
+# how can I interpolate strings with a variable
+reference = "literal ${var.variable_name}"
