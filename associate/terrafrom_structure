@@ -29,3 +29,31 @@ resource "{provider_name}_{resource_type}" resource_name {
 }
 
 resource_id = "{provider_name}_{resource_type}.{resource_name}"
+
+variable variable_name {
+    description = variable_description
+    type        = string | number | bool|
+                  list(string | number | bool) |
+                  set(string | number | bool) |
+                  map(string | number | bool) |
+                  object({key1=value1, ...keyN=valueN}) |
+                  tuple([string | number | bool,...]) |
+                  any
+    default     = default_value
+    sensitive   = true | false
+    validation {
+        condition = condition
+        error_message = error_message
+    }
+}
+
+# how to reference a variable
+provider provider_name {
+    parameter1 = var.variable_name
+}
+
+module module_name {
+    source = module_source
+    version = module_version
+    parameter = var.variable_name
+}
