@@ -32,12 +32,12 @@ resource_id = "{provider_name}_{resource_type}.{resource_name}"
 
 variable variable_name {
     description = variable_description
-    type        = string | number | bool|
-                  list(string | number | bool) |
-                  set(string | number | bool) |
-                  map(string | number | bool) |
+    type        = string | number | bool | list | set | map | object | tuple | map
+                  list(string | number | bool | list | set | map | object | tuple | map) |
+                  setstring | number | bool | list | set | map | object | tuple | map) |
+                  map(string | number | bool | list | set | map | object | tuple | map) |
                   object({key1=value1, ...keyN=valueN}) |
-                  tuple([string | number | bool,...]) |
+                  tuple([string | number | bool | list | set | map | object | tuple | map,...]) |
                   any
     default     = default_value
     sensitive   = true | false
