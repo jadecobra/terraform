@@ -3,3 +3,43 @@ source helper
 git clone https://github.com/hashicorp/learn-state-migration
 cd learn-state-migration
 pause
+
+display main.tf
+terraform init
+terraform plan
+
+cat << EOF > main.tf
+terraform {
+    required_providers {
+        random = {
+            source = "hashicorp/random"
+            version = "3.0.1"
+        }
+    }
+    required_version = "~> 3.0.`
+    backend "remote" {
+        hostname = "app.terraform.io"
+        organization = "jadecobra"
+        workspaces {
+            name "state-migration"
+        }
+    }
+}
+EOF
+pause
+display main.tf
+
+terraform login
+terraform init
+
+# The following occurs in the browser
+# Workspaces > state-migration > States
+# Workspaces > state-migration > Variables
+# name_length = 5
+rm terraform.tfstate
+terraform apply
+
+# Destroy
+# Settings > Destruction and Deletion
+# Check Allow destroy plans
+# Queue destroy plan
