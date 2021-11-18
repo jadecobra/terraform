@@ -1,15 +1,6 @@
 # This currently fails on M1 MacOSX
 
-pause () {
-    echo "\nPress [ENTER] to continue"
-    read REPLY
-}
-
-display () {
-    echo "displaying $1 ..."
-    cat $1
-    pause
-}
+source helper
 
 git clone https://github.com/hashicorp/learn-terraform-provider-versioning.git
 cd learn-terraform-provider-versioning
