@@ -1,0 +1,91 @@
+# This currently fails on M1 MacOSX
+
+pause () {
+    echo "\nPress [ENTER] to continue"
+    read REPLY
+}
+
+display () {
+    echo "displaying $1 ..."
+    cat $1
+    pause
+}
+
+git clone https://github.com/hashicorp/learn-terraform-provider-versioning.git
+cd learn-terraform-provider-versioning
+
+display 'main.tf'
+cat << EOF
+provider "aws" {
+    region = "us-west-2"
+}
+
+resource "random_pet" "petname" {
+    length = 5
+    separator = "."
+}
+
+resource "aws_s3_bucket" "sample" {
+    bucket  = random_pet.petname.id
+    acl     = "public-read"
+    region  = "us-west-2"
+}
+EOF
+pause
+
+display "versions.tf"
+cat << EOF
+terraform {
+    required_providers {
+        random = {
+            source  = "hashicorp/random"
+            version = "3.0.0"
+        }
+
+        aws = {
+            source = "hashicorp/aws"
+            version = ">= 2.0.0"
+        }
+    }
+
+    required_version = ">= 0.14"
+}
+EOF
+pause
+
+display ".terraform.lock.hcl"
+
+terraform init
+pause
+
+terraform plan
+pause
+
+terraform init -upgrade
+display ".terraform.lock.hcl"
+
+terraform plan
+pause
+
+cat << EOF > main.tf
+provider "aws" {
+    region = "us-west-2"
+}
+
+resource "random_pet" "petname" {
+    length = 5
+    separator = "."
+}
+
+resource "aws_s3_bucket" "sample" {
+    bucket  = random_pet.petname.id
+    acl     = "public-read"
+}
+EOF
+
+display "main.tf"
+pause
+
+terraform plan
+
+terraform providers

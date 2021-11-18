@@ -1,0 +1,15 @@
+how can I manage any infrastructure? plugins
+what is a terraform plugin? providers
+what is a terraform provider? API
+how can I find providers? https://registry.terraform.io/browse/providers
+
+how can I standardize my deployment workflow?
+what are the individual units of infrastructure? providers
+how can I create modules? providers
+
+how can I deploy infrastructure with terraform?
+scope + author + initialize + plan + apply
+infrastructure + configuration + plugins + preview + implement
+
+how can I track my infrastructure? state file
+how can I share my state with teammates? terraform cloud + version control

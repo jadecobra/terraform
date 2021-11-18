@@ -1,0 +1,4 @@
+choco install terraform
+terraform -help
+terraform -version
+terraform -install-autocomplete
