@@ -1,0 +1,62 @@
+pause () {
+    echo "\nPress [ENTER] to continue"
+    read REPLY
+}
+
+display () {
+    echo "displaying $1 ..."
+    cat $1
+    pause
+}
+
+projectName="learn-terraform-aws-instance"
+mkdir $projectName
+cd $projectName
+
+cat << EOF > main.tf
+terraform {
+    required_providers {
+        aws = {
+            source  = "hashicorp/aws"
+            version = "~> 3.27"
+        }
+    }
+    required_version = ">= 0.14.0"
+}
+
+provider "aws" {
+    profile = "default"
+    region  = "us-west-2"
+}
+
+resource "aws_instance" "app_server" {
+    ami = "ami-830c94e3"
+    instance_type = "t2.micro"
+
+    tags = {
+        Name = "AppServer"
+    }
+}
+EOF
+display main.tf
+
+terraform init
+pause
+
+echo "Formatting Terraform Configuration"
+terraform fmt
+pause
+
+echo "Validating Terraform Configuration"
+terraform validate
+pause
+
+echo "Here's the Terraform plan"
+terraform plan
+pause
+
+echo "Inspecting Current State"
+terraform show
+
+echo "Listing resources"
+terraform state list

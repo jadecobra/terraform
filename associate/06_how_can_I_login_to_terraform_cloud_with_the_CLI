@@ -1,0 +1,6 @@
+terraform login
+
+# The following will happen in the browser:
+# create API token
+# copy token
+# paste token in terminal

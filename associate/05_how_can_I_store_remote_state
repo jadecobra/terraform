@@ -1,0 +1,57 @@
+# Prerequisites: https://app.terraform.io/signup/account
+
+pause () {
+    echo "\nPress [ENTER] to continue"
+    read REPLY
+}
+
+display () {
+    echo "displaying $1 ..."
+    cat $1
+    pause
+}
+
+projectName="learn-terraform-aws-instance"
+mkdir $projectName
+cd $projectName
+
+cat << EOF > main.tf
+terraform {
+    backend "remote" {
+        organization = "jadecobra"
+        workspaces {
+            name = "Example-Workspace"
+        }
+    }
+    required_providers {
+        aws = {
+            source  = "hashicorp/aws"
+            version = "~> 3.27"
+        }
+    }
+    required_version = ">= 0.14.0"
+}
+
+provider "aws" {
+    profile = "default"
+    region  = "us-west-2"
+}
+
+resource "aws_instance" "app_server" {
+    ami = "ami-830c94e3"
+    instance_type = "t2.micro"
+
+    tags = {
+        Name = "AppServer"
+    }
+}
+EOF
+
+terraform login
+terraform init
+rm terraform.tfstate
+
+python3 -m webbrowser https://app.terraform.io/session
+# Set Workspace Variables - AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN
+terraform apply
+terraform destroy
