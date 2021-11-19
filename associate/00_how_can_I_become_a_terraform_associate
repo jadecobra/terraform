@@ -11,7 +11,7 @@
 10_how_can_I_query_data_sources?
 11_how_can_I_create_resource_dependencies?
 12_how_can_I_perform_dynamic_operations_with_functions?
-13_how_can_I_manage_resources_in_terraform_state?
+code ?
 14_how_can_I_import_terraform_configuration?
 15_how_can_I_manage_resource_drift?
 16_how_can_I_use_refresh-only_mode_to_sync_terraform_state?
