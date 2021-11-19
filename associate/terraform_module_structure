@@ -1,0 +1,3 @@
+main.tf - terraform configuration
+variables.tf - input variables
+outputs.tf - output values
