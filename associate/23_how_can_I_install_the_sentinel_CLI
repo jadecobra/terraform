@@ -1,0 +1,11 @@
+https://docs.hashicorp.com/sentinel/downloads
+curl https://releases.hashicorp.com/sentinel/0.18.4/sentinel_0.18.4_darwin_amd64.zip -o sentinel.zip # M1 Macs
+unzip sentinel.zip
+rm sentinel.zip
+./sentinel version
+sudo mv sentinel /usr/local/bin/sentinel
+source ~/.zshrc # source ~/.bashrc
+sentinel version
+
+# go to  https://learn.hashicorp.com/tutorials/terraform/sentinel-install?in=terraform/certification-associate-tutorials
+# and run lab to test sentinel
