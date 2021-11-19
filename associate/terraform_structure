@@ -76,3 +76,25 @@ data "{provider_name}_{resource_type}" "{data_source_name}" {
 
 # how can I reference data source attributes
 data.{provider_name}_{resource_type}.{data_source_name}.{attribute_name}
+
+# how can I use a template file
+templatefile("{template_file_path}", {
+    parameter1 = var.variable_name1
+    parameter2 = var.variable_name2
+    parameter3 = var.variable_name3
+    parameterN = {
+        key1 = value1
+    }
+})
+
+# what functions can I use
+file("{file_path}")
+lookup(var.variable_name1, var.variable_name2, var.variable_name3, var.variable_nameN)
+templatefile("{template_file_path}", {
+    parameter1 = var.variable_name1
+    parameter2 = var.variable_name2
+    parameter3 = var.variable_name3
+    parameterN = {
+        key1 = value1
+    }
+})

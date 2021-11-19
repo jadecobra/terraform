@@ -1,0 +1,139 @@
+# https://learn.hashicorp.com/tutorials/terraform/functions?in=terraform/certification-associate-tutorials
+source helper
+
+git clone https://github.com/hashicorp/learn-terraform-functions.git
+cd learn-terrform-functions
+
+display user_data.tftpl
+cat << EOF
+#!/bin/bash
+
+# Install necessary dependencies
+sudo DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Option::="--force-confdef" -o Dpkg::Options::="==force-confold" dist-upgrade
+sudo apt-get -y -qq install curl wget git vim apt-transport-https ca-certificates
+sudo add-apt-repository ppa:longsleep/glang-backports -y
+sudo apt -y -qq install golang-go
+
+# setup sudo to allow no-password sudo for your group and adding your user
+sudo groupadd -r ${department}
+sudo useradd -m -s /bin/bash ${name}
+sudo usermod -a -G ${department} ${name}
+sudo cp /etc/sudoers /etc/sudoers.orig
+echo "${name} ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/${name}
+
+# Create GOPATH for your user & download the webapp from github
+sudo -H -i -i ${name} -- env bash << EOF1
+cd /hom/${name}
+export GOROOT=/usr/lib/go
+export GOPATH=/home/${name}/go
+export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
+go get -d github.com/hashicorp/learn-go-webapp-demo
+cd go/src/github.com/hashicorp/learn-go-webapp-demo
+go run webapp.go
+EOF1
+EOF
+
+display variables.tf
+cat << EOF > variables.tf
+variable "user_name" {
+    description = "The user creating this infrastructure"
+    type        = "string"
+    default     = "terraform"
+}
+
+variable "user_department" {
+    description = "The organization the user belongs to: dev, prod, qa"
+    type        = "string"
+    default     = "learn"
+}
+EOF
+
+# add user_data attribute
+##...
+# resource "aws_instance" "web" {
+#   ami                         = data.aws_ami.ubuntu.id
+#   instance_type               = "t2.micro "
+#   subnet_id                   = aws_subnet.subnet_public.id
+#   vpc_security_group_ids      = [aws_security_group.sq_8080.id]
+#   associate_public_ip_address = true
+#   user_data                   = templatefile("user_data.tftpl", { department = var.user_department, name = var.user_name })
+#}
+#
+#
+
+##...
+terraform init
+terraform plan
+
+cat << EOF >> variables.tf
+variable "aws_amis" {
+    type = map
+    default = {
+        "us-east-1" = "ami-0739f8cdb239fe9ae"
+        "us-west-2" = "ami-008b09448b998a562"
+        "us-east-2" = "ami-0ebc8f6f580a04647"
+    }
+}
+EOF
+
+## remove data source in main.tf
+## in aws_instance use lookup function
+# resource "aws_instance" "web" {
+#   ami                         = lookup(var.aws_amis, var.aws_region)
+#   instance_type               = "t2.micro "
+#   subnet_id = aws_subnet.subnet_public.id
+#   vpc_security_group_ids      = [aws_security_group.sq_8080.id]
+#   associate_public_ip_address = true
+#   user_data                   = templatefile("user_data.tftpl", { department = var.user_department, name = var.user_name })
+#}
+##
+
+cat << EOF >> outputs.tf
+output "ami_value" {
+    value = lookup(var.aws_amis, var.aws_region)
+}
+EOF
+
+terraform apply -var "aws_region=us-east-2"
+pause
+
+ssh-keygen -C "your_email@example.com" -f ssh_key
+display main.tf
+cat << EOF >> main.tf
+resource "aws_security_group" "sg_22" {
+    name = "sg_22"
+    vpc_id = aws_vpc.vpc.id
+
+    ingress {
+        from_port = 22
+        to_port = 22
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+}
+
+resource "aws_key_pair" "ssh_key" {
+    key_name = "ssh_key"
+    public_key = file("ssh_key.pub")
+}
+EOF
+
+## in aws_instance add ssh key
+# resource "aws_instance" "web" {
+#   ami                         = lookup(var.aws_amis, var.aws_region)
+#   instance_type               = "t2.micro "
+#   subnet_id = aws_subnet.subnet_public.id
+#   vpc_security_group_ids      = [aws_security_group.sq_8080.id]
+#   associate_public_ip_address = true
+#   user_data                   = templatefile("user_data.tftpl", { department = var.user_department, name = var.user_name })
+#   key_name                    = aws_key_pair.ssh_key.key_name
+#}
+##
+
+cat << EOF >> outputs.tf
+output "web_security_group_ids" {
+    value = concat([aws_security_group.sg_22.id, aws_security_group.sg_8000.id])
+}
+EOF
+
+terraform plan
