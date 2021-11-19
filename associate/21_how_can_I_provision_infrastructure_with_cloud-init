@@ -1,0 +1,32 @@
+git clone -b cloudinit https://github.com/hashicorp/learn-terraform-provisioning
+cd learn-terraform-provisioning
+
+ssh-keygen -t rsa -C "your_email@domain.com" -f ./tf-cloud-init
+
+# replace ssh_authorized_keys in scripts/add-ssh-web-app.yaml
+##...
+# users:
+#   - default
+#   - name: terraform
+#     gecos: terraform
+#     primary_group: hashicorp
+#     sudo: ALL=(ALL) NOPASSWD:ALL
+#     groups: users, admin
+#     ssh_import_id:
+#     lock_passwd: false
+#     ssh_authorized_keys:
+#       -  # Paste your created SSH key here
+##...
+
+cat << EOF > terraform.tfvars
+region = "us-east-1"
+EOF
+
+terraform init
+terraform plan
+# terraform apply
+# ssh terraform@$(terraform output -raw public_ip) -u ../tf-cloud-init
+# cd go/src/github.com/hashicorp/learn-go-webapp-demo
+# exit
+
+# terraform destroy
