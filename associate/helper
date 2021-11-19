@@ -8,3 +8,9 @@ display () {
     cat $1
     pause
 }
+
+displayDirectory ( ) {
+    echo "Displaying contents of $1..."
+    ls -a $1
+    pause
+}

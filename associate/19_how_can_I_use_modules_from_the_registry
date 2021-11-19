@@ -1,11 +1,5 @@
 source helper
 
-displayDirectory ( ) {
-    echo "Displaying contents of $1..."
-    ls -a $1
-    pause
-}
-
 mkdir learn-terraform-modules-use
 cd learn-terraform-modules-use
 
