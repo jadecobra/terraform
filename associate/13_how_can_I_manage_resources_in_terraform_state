@@ -1,0 +1,135 @@
+source helper
+
+git clone https://github.com/hashicorp/learn-terraform-state.git
+cd learn-terraform-state
+
+display main.tf
+
+cat EOF <<
+terraform {
+    required_providers {
+        aws = {
+            source  = "hashicorp/aws"
+            version = ">= 3.24.1"
+        }
+    }
+    required_version = "~> 0.14"
+}
+
+variable "region" {
+    description = "The AWS region your resources will be deployed"
+}
+
+provider "aws" {
+    region = var.region
+}
+
+data "aws_ami" "ubuntu" {
+    most_recent = true
+
+    filter {
+        name = "name"
+        values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+    }
+
+    filter {
+        name = "virtualization-type"
+        values = ["hvm"]
+    }
+
+    owners = ["099720109477"] # Canonical
+}
+
+resource "aws_instance" "example" {
+    ami = data.aws_ami.ubuntu.id
+    instance_type = "t2.micro"
+    vpc_security_group_ids = [aws_security_group.sg_8080.id]
+    user_data = << EOF1
+        #!/bin/bash
+        echo "Hello, World" > index.html
+        nohup busybox httpd -f -p 8080 &
+        EOF1
+
+    tags = {
+        Name = "terraform-learn-state-ec2"
+    }
+}
+
+resource "aws_security_group" "sg_8080" {
+    name = "terraform-learn-state-sg"
+    ingress {
+        from_port   = "8080"
+        to_port     = "8080"
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+}
+
+output "public_ip" {
+    value = aws_instance.example.public_ip
+    description = "The public IP of the web server"
+}
+
+output "public_ip" {
+    value = aws_instance.example.public_ip
+    description = "The public IP of the web server"
+}
+
+output "security_group" {
+    value = aws_security_group.sg_8080.id
+}
+EOF
+
+cat << EOF > terrform.tfvars
+region = "us-east-2"
+EOF
+
+terraform init
+terraform plan
+
+# terraform apply
+# terraform show
+# terraform state list
+# terraform show
+
+# how to replace a resource
+terraform plan -replace="aws_instance.example"
+terraform apply -replace="aws_instance.example"
+
+# how to move a resource to a different state file
+cd new_state
+cp ../terraform.tfvars .
+terraform init
+terraform plan
+terraform state mv -state-out=../terraform.tfstate aws_instance.example_new aws_instance.example_new
+cd ..
+terraform state list
+terraform apply
+terraform state list
+
+cd new_state
+terraform destroy
+
+# how to remove a resource from state
+cd ..
+terraform state rm
+terraform state rm aws_security_group.sg_8080
+terraform state list
+
+# how to import a resource
+terraform import  aws_security_group.sg_8080 $(terraform output -raw security_group)
+
+# how can I update state file to track changes made outside the workflow?
+aws ec2 terminate-instances --instance-ids $(terraform output -raw instance_id)
+terraform refresh
+terraform state list
+terraform plan
+
+
+# Remove aws_instance resource, instance_id and public_ip outputs
+terraform apply
+
+terraform destroy
+terraform show
+
+cat terraform.tfstate
