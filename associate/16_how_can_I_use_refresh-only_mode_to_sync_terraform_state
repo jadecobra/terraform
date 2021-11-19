@@ -1,0 +1,16 @@
+source helper
+
+git clone https://github.com/hashicorp/learn-terraform-refresh.git
+cd learn-terraform-refresh
+
+terraform init
+terraform plan
+# terraform apply
+
+cat << EOF > terraform.tfvars
+region = "us-west-2"
+EOF
+
+terraform plan -refresh-only
+rm terraform.tfvars
+terraform destroy
