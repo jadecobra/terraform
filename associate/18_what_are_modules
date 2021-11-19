@@ -1,0 +1,21 @@
+# what are modules used for?
+# 1 - organization
+# 2 - encapsulation
+# 3 - reusability
+# 4 - consistency
+# 5 - compliance
+
+# what is a terraform module? set of configuration files in a single directory
+# minimal module? - LICENSE + README.md + main.tf + variables.tf + outputs.tf
+
+# how can I call a module? module blocks
+# hoW can I call modules in other directories?
+# how can I call local modules?
+# how can I call remote modules?
+
+# what are the best practices with modules?
+# 1 - provider name -> terraform-<PROVIDER>-<NAME>
+# 2 - always be writing modules
+# 3 - use local modules
+# 4 - check public Terraform Registry for modules
+# 5 - publish and share modules with team
