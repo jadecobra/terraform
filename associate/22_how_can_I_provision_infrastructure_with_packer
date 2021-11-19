@@ -1,0 +1,52 @@
+source helper
+
+brew upgrade
+brew tap hashicorp/tap
+brew install hashicorp/tap/packer
+brew upgrade hashicorp/tap/packer
+
+packer version
+
+git clone -b packer https://github.com/hashicorp/learn-terraform-provisioning
+cd learn-terraform-provisioning
+ssh-keygen -t rsa -C "your_email@domain.com" -f ./tf-packaer
+
+cd scripts
+display setup.sh
+
+cd ../images
+display image.pkr.hcl
+
+packer build image.pkr.hcl
+
+cd ../instances
+display main.tf
+# add ami id to main.tf
+##...
+# resource "aws_instance" "web" {
+#   ami                         = <REPLACE_ME_WITH_AMI_ID>
+#   instance_type               = "t2.micro"
+#   subnet_id                   = aws_subnet.subnet_public.id
+#   vpc_security_group_ids      = [aws_security_group.sg_22_80.id]
+#   associate_public_ip_address = true
+
+#   tags = {
+#     Name = "Learn-Packer"
+#   }
+# }
+##...
+
+cat << EOF > terraform.tfvars
+region = "us-east-1"
+EOF
+
+terraform init
+terraform plan
+# terraform apply
+
+ssh terraform@$(terraform output -raw public_ip) -i ../tf-packaer
+cd go/src/github.com/hashicorp/learn-go-webapp-demo
+go run webapp.go
+exit
+
+terraform destroy
