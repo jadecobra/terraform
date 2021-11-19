@@ -1,0 +1,21 @@
+source helper
+
+brew update
+brew install jq
+
+git clone https://github.com/hashicorp/learn-terraform-drift-management.git
+cd learn-terraform-drift-management
+
+ssh -keygen -t rsa -C "your_email@domain.com" -f ./key
+aws configure get region
+
+display terraform.tfvars
+display main.tf
+terraform init
+terraform plan
+# terraform apply
+# terraform state list
+
+# introduce drift
+export SG_ID=$(aws ec2 create-security-group --group-name "sg_web" --description "allow 8080" --output text)
+echo echo $SG_ID
