@@ -1,0 +1,53 @@
+source helper
+# create Cloudflare API token
+# https://dash.cloudflare.com/profile/api-tokens
+# My Profile > API Tokens
+# Create Token
+# Create Custom Token > Get started
+# Token name > "Terraform Token"
+# Permissions
+#   Row1 -> Zone, DNS, Edit
+#   Row2 -> Zone, Page rules, Edit
+# Zone resources
+#   Include, Specific Zone, Domain
+# Continue to Summary
+# Create Token
+# Copy Token
+
+
+# @ terminal
+# export CLOUDFLAR_API_TOKEN=<your token>
+
+git clone https://github.com/hashicorp/learn-terraform-cloudflare-static-website.git
+cd learn-terraform-cloudflare-static-website
+
+display main.tf
+display terraform.tfvars.example
+
+cat <<EOF > terraform.tfvars
+aws_region = "us-east-1"
+site_domain = "example.com"
+EOF
+
+# Best practice - do not check in terraform.tfvars
+echo terraform.tfvars >> .gitignore
+
+terraform init
+# copy website files to s3 bucket
+# aws s3 cp website/ s3://$(terraform output -raw website_bucket_name)/ --recursive
+
+# Create Cloudflare page rules
+# https://www.cloudflare.com/features-page-rules/must-use-page-rules/
+# add this main.tf
+# resource "cloudflare_page_rule" "https" {
+#   zone_id = data.cloudflare_zones.domain.zones[0].id
+#   target = "*.${var.site_domain}/*"
+#   actions {
+#     always_use_https = true
+#   }
+#}
+#
+
+# terraform plan
+# terraform apply
+# terraform deploy

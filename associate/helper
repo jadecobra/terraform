@@ -3,14 +3,18 @@ pause () {
     read REPLY
 }
 
+displayMessage () {
+    echo "displaying contents of $1..."
+}
+
 display () {
-    echo "displaying $1 ..."
+    displayMessage $1
     cat $1
     pause
 }
 
 displayDirectory ( ) {
-    echo "Displaying contents of $1..."
+    displayMessage $1
     ls -a $1
     pause
 }
