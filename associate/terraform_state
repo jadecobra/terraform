@@ -1,0 +1,29 @@
+{
+    "resources": [
+        {
+            "mode": "managed" | "data",
+            "type": "{provider}_{resource_type}",
+            "name": resource_name,
+            "provider": "provider[\"registry.terraform.io/{provider_address}\"]",
+            resources: [
+                {
+                    "schema_version": number,
+                    "attributes": {
+                        "parameter1": "value1",
+                        "parameter2": "value2",
+                        "parameter3": "value3",
+                        "parameterN": {
+                            "key1": "value1"
+                        }
+                    },
+                    "dependecies": [
+                        resource_name_1,
+                        resource_name_2,
+                        resource_name_3,
+                        resource_name_N
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,76 @@
+# WARNING - this fails on Apple M1 Macs
+
+source helper
+open -a Docker
+
+echo "Launch an nginx container"
+docker run --name hashicorp-learn --detach --publish 8080:80 nginx:latest
+docker ps
+pause
+
+curl 0.0.0.0:8080
+python3 -m webbrowser 0.0.0.0:8080
+
+echo "Cloning the Tutorial"
+git clone https://github.com/hashicorp/learn-terraform-import.git
+cd learn-terraform-import
+ls
+pause
+
+display main.tf
+display docker.tf
+terraform init
+
+cat << EOF > docker.tf
+resource "docker_image" "nginx" {
+    name = "nginx:latest"
+}
+
+resource "docker_container" "web" {}
+EOF
+
+docker ps --filter "name=hashicorp-learn"
+terraform import docker_container.web $(docker inspect --format="{{.ID}}" hashicorp-learn)
+terraform show
+
+terraform plan
+
+# how to update the configuration
+terraform show -no-color > docker.tf
+terraform plan # fix errors
+terraform plan # confirm errors are fixed
+terraform apply # synchronize configuration
+
+docker ps --filter "name=hashicorp-learn"
+
+# how to create an Image resource
+docker image inspect $(docker inspect --format="{{.ID}}" hashicorp-learn) -f {{.RepoTags}}
+# edit docker.tf
+# resource "docker_image" "nginx" {
+#    name = "nginx:latest"
+#}
+terraform apply
+# edit docker.tf
+# resource "docker_image" "nginx" {
+#    name = "hashicorp-learn"
+#    image = docker_image.nginx.latest
+#}
+terraform apply
+
+# modify docker.tf
+# edit docker.tf
+# resource "docker_container" "web" {
+#    name = "hashicorp=learn"
+#    image = docker_image.nginx.latest
+#
+#    ports {
+#        external = 8081
+#        internal = 80
+#   }
+#}
+terraform apply
+docker ps
+curl 0.0.0.0:8081
+
+terraform destroy
+docker ps
