@@ -1,3 +1,27 @@
 main.tf - terraform configuration
+main.tf
+provider provider_name {
+    parameterN = valueN
+}
+
+resource provider_name_resource_type resource_name {
+    parameterN = valueN
+}
+
+data provider_name_resource_type resource_name {
+    parameterN = valueN
+}
+
 variables.tf - input variables
+variable variable_name {
+    type = string | number | bool | list| set | map
+    default = value
+    description = description
+    sensitive = true | false
+    validation
+}
+
 outputs.tf - output values
+output variable_name {
+    value = provider_name_resource_type.resource_name.parameterN
+}

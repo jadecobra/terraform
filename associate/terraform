@@ -1,0 +1,12 @@
+main.tf
+provider provider_name {
+    parameterN = valueN
+}
+
+resource provider_name_resource_type resource_name {
+    parameterN = valueN
+}
+
+data provider_name_resource_type resource_name {
+    parameterN = valueN
+}

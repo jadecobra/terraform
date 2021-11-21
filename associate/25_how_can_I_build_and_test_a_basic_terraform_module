@@ -1,0 +1,85 @@
+source helper
+terraform version
+
+create_and_go_to_folder () {
+  mkdir -p $1
+  cd $1
+}
+
+create () {
+    echo "create $1..."
+    cat << DOCUMENT > $1
+$2
+DOCUMENT
+    display $1
+}
+
+terraform_project=$1
+echo "Creating structure $terraform_project/modules/vpc"
+create_and_go_to_folder $terraform_project/modules/vpc
+
+create main.tf 'provider "aws" {
+    region = var.region
+}
+
+resource "aws_vpc" "this" {
+    cidr_block = "10.0.0.0/16"
+}
+
+resource "aws_subnet" "this" {
+    vpc_id = aws_vpc.this.id
+    cidr_block = "10.0.1.0/24"
+}
+
+data "aws_ssm_parameter" "this" {
+    name = "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
+}'
+
+create variables.tf 'variable "region" {
+    type = "string"
+    default = "us-east-1
+}'
+
+create outputs.tf 'output "subnet_id" {
+    value = aws_subnet.this.id
+}
+
+output "ami_id" {
+    value = data.aws_ssm_parameter.this.value
+}'
+cd ../..
+displayDirectory .
+
+echo 'Writing Main Terraform Project Code'
+create main.tf 'variable "main_region" {
+    type = string
+    default = "us-east-1"
+}
+
+provider "aws" {
+    region = var.main_region
+}
+
+module "vpc" {
+    source = "./modules/vpc"
+    region = var.rmain_region
+}
+
+resource "aws_instance" "my-instance" {
+    ami = module.vpc.ami_id
+    subnet_id = module.vpc.subnet_id
+    instance_type = "t2.micro"
+}'
+
+create outputs.tf << EOF
+output "PrivateIP" {
+    description = "Private IP of EC2 instance"
+    value = aws_instance.my-instance.private_ip
+}
+EOF
+
+
+terraform fmt -recursive
+terraform init
+terraform validate
+terraform plan
