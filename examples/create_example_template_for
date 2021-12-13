@@ -11,7 +11,7 @@ write_data_to_file $1 'import_helper() {
     source $helper_path
 }
 
-create_main_configuration()
+create_main_configuration() {
     write_data_to_file main.tf <REPLACE_ME>
 }
 
