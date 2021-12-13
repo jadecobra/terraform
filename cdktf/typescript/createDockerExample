@@ -1,45 +1,33 @@
-display_directory() {
-    ls -al
-}
+sudo curl https://raw.githubusercontent.com/jadecobra/arsenal/main/helper -o /usr/local/bin/helper
+source helper
 
 create_file() {
     'creating $1'
 }
 
-rm -rf docker
-mkdir docker
-cd docker
-display_directory
-cdktf init --template=typescript --local
-display_directory
+create_project() {
+  header "Creating project named $1"
+  rm -rf $1
+  mkdir $1
+  cd $1
+  display_directory
+  cdktf init --template=typescript --local --project-name=$1 --project-description="$1 Example"
+  display_directory
+}
 
-echo 'Adding docker terraform provider...'
-cat cdktf.json | jq '.terraformProviders += ["kreuzwerker/docker"]' > cdktf.json.tmp
+clear
+projectName='dockerExample'
+create_project $projectName
+header 'Adding docker terraform provider.to cdktf.json..'
+cat cdktf.json | jq '.terraformProviders += ["kreuzwerker/docker@latest"]' > cdktf.json.tmp
 mv cdktf.json.tmp cdktf.json
 cat cdktf.json
-cat cdktf.json
 
-cat << EOF > jest.config.js
-module.exports = {
-  clearMocks: true,
-  coverageProvider: "v8",
-  setupFilesAfterEnv: ["./setup.js"],
-};
-
-EOF
-cat jest.config.js
-
-
-
+header 'Creating main.ts'
 cat << EOF > main.ts
 import { Construct } from "constructs";
 import { App, TerraformStack } from "cdktf";
-import {
-  Container,
-  Image,
-  DockerProvider,
-  Service,
-} from "./.gen/providers/docker";
+import { Container, Image, DockerProvider, Service } from "./.gen/providers/docker";
 
 class MyStack extends TerraformStack {
   public readonly dockerImage: Image;
@@ -56,7 +44,7 @@ class MyStack extends TerraformStack {
 
     new Container(this, "nginxContainer", {
       image: this.dockerImage.latest,
-      name: "tutorial",
+      name: "nginxContainer",
       ports: [
         {
           internal: 80,
@@ -66,7 +54,7 @@ class MyStack extends TerraformStack {
     });
 
     new Service(this, "nginxService", {
-      name: "nginx",
+      name: "nginxService",
       taskSpec: {
         containerSpec: {
           image: this.dockerImage.latest,
@@ -77,100 +65,111 @@ class MyStack extends TerraformStack {
 }
 
 const app = new App();
-new MyStack(app, "demo-cdktf-ts-docker");
+new MyStack(app, "$projectName");
 app.synth();
 EOF
 cat main.ts
 
+header 'Getting Terraform Providers'
 cdktf get
+
+header 'Synthesizing Terraform Template'
 cdktf synth
+cat cdktf.out/stacks/$projectName/cdk.tf.json
+pause
+display_directory
 
-mkdir __tests__
-cat << EOF > __tests__/main-test.ts
-import { Testing } from "cdktf";
-import "cdktf/lib/testing/adapters/jest";
+open -a Docker
+cdktf deploy
+docker ps
 
-describe('My CDKTF Application', () => {
-  it.todo('should be tested');
+# header 'Creating tests'
+# mkdir __tests__
+# cat << EOF > __tests__/main-test.ts
+# import { Testing } from "cdktf";
+# import "cdktf/lib/testing/adapters/jest";
 
-  // All Unit testst test the synthesised terraform code, it does not create real-world resources
-  describe("Unit testing using assertions", () => {
-    it("should contain a resource", () => {
-      // import { Image,Container } from "./.gen/providers/docker"
-      expect(
-        Testing.synthScope((scope) => {
-          new MyApplicationsAbstraction(scope, "my-app", {});
-        })
-      ).toHaveResource(Container);
+# describe('My CDKTF Application', () => {
+#   it.todo('should be tested');
 
-      expect(
-        Testing.synthScope((scope) => {
-          new MyApplicationsAbstraction(scope, "my-app", {});
-        })
-      ).toHaveResourceWithProperties(Image, { name: "ubuntu:latest" });
-    });
-  });
+#   // All Unit testst test the synthesised terraform code, it does not create real-world resources
+#   describe("Unit testing using assertions", () => {
+#     it("should contain a resource", () => {
+#       // import { Image,Container } from "./.gen/providers/docker"
+#       expect(
+#         Testing.synthScope((scope) => {
+#           new MyApplicationsAbstraction(scope, "my-app", {});
+#         })
+#       ).toHaveResource(Container);
 
-  describe("Unit testing using snapshots", () => {
-    it("Tests the snapshot", () => {
-      const app = Testing.app();
-      const stack = new TerraformStack(app, "test");
+#       expect(
+#         Testing.synthScope((scope) => {
+#           new MyApplicationsAbstraction(scope, "my-app", {});
+#         })
+#       ).toHaveResourceWithProperties(Image, { name: "ubuntu:latest" });
+#     });
+#   });
 
-      new TestProvider(stack, "provider", {
-        accessKey: "1",
-      });
+#   describe("Unit testing using snapshots", () => {
+#     it("Tests the snapshot", () => {
+#       const app = Testing.app();
+#       const stack = new TerraformStack(app, "test");
 
-      new TestResource(stack, "test", {
-        name: "my-resource",
-      });
+#       new TestProvider(stack, "provider", {
+#         accessKey: "1",
+#       });
 
-      expect(Testing.synth(stack)).toMatchSnapshot();
-    });
+#       new TestResource(stack, "test", {
+#         name: "my-resource",
+#       });
 
-    it("Tests a combination of resources", () => {
-      expect(
-        Testing.synthScope((stack) => {
-          new TestDataSource(stack, "test-data-source", {
-            name: "foo",
-          });
+#       expect(Testing.synth(stack)).toMatchSnapshot();
+#     });
 
-          new TestResource(stack, "test-resource", {
-            name: "bar",
-          });
-        })
-      ).toMatchInlineSnapshot();
-    });
-  });
+#     it("Tests a combination of resources", () => {
+#       expect(
+#         Testing.synthScope((stack) => {
+#           new TestDataSource(stack, "test-data-source", {
+#             name: "foo",
+#           });
 
-  describe("Checking validity", () => {
-    it("check if the produced terraform configuration is valid", () => {
-      const app = Testing.app();
-      const stack = new TerraformStack(app, "test");
+#           new TestResource(stack, "test-resource", {
+#             name: "bar",
+#           });
+#         })
+#       ).toMatchInlineSnapshot();
+#     });
+#   });
 
-      new TestDataSource(stack, "test-data-source", {
-        name: "foo",
-      });
+#   describe("Checking validity", () => {
+#     it("check if the produced terraform configuration is valid", () => {
+#       const app = Testing.app();
+#       const stack = new TerraformStack(app, "test");
 
-      new TestResource(stack, "test-resource", {
-        name: "bar",
-      });
-      expect(Testing.fullSynth(app)).toBeValidTerraform();
-    });
+#       new TestDataSource(stack, "test-data-source", {
+#         name: "foo",
+#       });
 
-    it("check if this can be planned", () => {
-      const app = Testing.app();
-      const stack = new TerraformStack(app, "test");
+#       new TestResource(stack, "test-resource", {
+#         name: "bar",
+#       });
+#       expect(Testing.fullSynth(app)).toBeValidTerraform();
+#     });
 
-      new TestDataSource(stack, "test-data-source", {
-        name: "foo",
-      });
+#     it("check if this can be planned", () => {
+#       const app = Testing.app();
+#       const stack = new TerraformStack(app, "test");
 
-      new TestResource(stack, "test-resource", {
-        name: "bar",
-      });
-      expect(Testing.fullSynth(app)).toPlanSuccessfully();
-    });
-  });
-});
-EOF
-cat __tests__/main-test.ts
+#       new TestDataSource(stack, "test-data-source", {
+#         name: "foo",
+#       });
+
+#       new TestResource(stack, "test-resource", {
+#         name: "bar",
+#       });
+#       expect(Testing.fullSynth(app)).toPlanSuccessfully();
+#     });
+#   });
+# });
+# EOF
+# cat __tests__/main-test.ts

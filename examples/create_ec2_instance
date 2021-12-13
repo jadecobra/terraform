@@ -1,0 +1,81 @@
+import_helper() {
+    local helper_path=/usr/local/bin/helper
+    cat $helper_path || sudo curl https://raw.githubusercontent.com/jadecobra/arsenal/main/helper -o /usr/local/bin/helper
+    source $helper_path
+}
+
+create_main_configuration() {
+    write_data_to_file main.tf 'terraform {
+required_version=">= 0.11.0"
+}
+
+provider "aws" {
+    region = "${var.aws_region}"
+}
+
+data "aws_ami" "ubuntu" {
+    most_recent = true
+
+    filter {
+        name = "name"
+        values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+    }
+
+    filter {
+        name = "virtualization-type"
+        values = ["hvm"]
+    }
+
+    owners = ["099720109477"]
+}
+
+resource "aws_instance" "ubuntu" {
+    ami = data.aws_ami.ubuntu.id
+    instance_type="${var.instance_type}"
+    availability_zone = "${var.aws_region}"
+
+    tags = {
+        Name="${var.name}"
+    }
+}'
+EOF
+}
+
+create_outputs() {
+    write_data_to_file outputs.tf 'output "public_dns" {
+    value = "${aws_instance.ubuntu.public_dns}"
+}'
+}
+
+create_variables() {
+    write_data_to_file variables.tf 'variable "aws_region" {
+    description = "AWS Region"
+    default = "us-west-1"
+}
+
+variable "instance_type" {
+    description = "EC2 Instance Type"
+    default = "t2.micro"
+}
+
+variable "name" {
+    description = "Name of the EC2 Instance"
+    default = "TerraformProvisionedEC2"
+}'
+}
+
+import_helper
+projectName="aws_ec2_instance"
+rm -rf $projectName
+create_and_go_to $projectName
+ls -a
+pwd
+create_main_configuration
+create_outputs
+create_variables
+tfswitch
+export PATH=$PATH:$HOME/bin
+terraform init
+terraform fmt
+terraform validate
+terraform plan
