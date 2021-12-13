@@ -24,9 +24,9 @@ create_variables() {
 }
 
 import_helper
-projectName="aws_ec2_instance"
-rm -rf $projectName
-create_and_go_to $projectName
+project_name="aws_ec2_instance"
+rm -rf $project_name
+create_and_go_to $project_name
 ls -a
 pwd
 create_main_configuration
