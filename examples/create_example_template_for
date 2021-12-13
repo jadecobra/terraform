@@ -1,24 +1,30 @@
-cat << EOF > $1
 import_helper() {
     local helper_path=/usr/local/bin/helper
     cat $helper_path || sudo curl https://raw.githubusercontent.com/jadecobra/arsenal/main/helper -o /usr/local/bin/helper
     source $helper_path
 }
 
+import_helper
+write_data_to_file $1 'import_helper() {
+    local helper_path=/usr/local/bin/helper
+    cat $helper_path || sudo curl https://raw.githubusercontent.com/jadecobra/arsenal/main/helper -o /usr/local/bin/helper
+    source $helper_path
+}
+
 create_main_configuration()
-    write_data_to_file main.tf '<REPLACE_ME>'
+    write_data_to_file main.tf <REPLACE_ME>
 }
 
 create_outputs() {
-    write_data_to_file outputs.tf '<REPLACE_ME>'
+    write_data_to_file outputs.tf <REPLACE_ME>
 }
 
 create_variables() {
-    write_data_to_file variables.tf '<REPLACE_ME>'
+    write_data_to_file variables.tf <REPLACE_ME>
 }
 
 import_helper
-projectName="$1"
+projectName="aws_ec2_instance"
 rm -rf $projectName
 create_and_go_to $projectName
 ls -a
@@ -32,5 +38,5 @@ terraform init
 terraform fmt
 terraform validate
 terraform plan
-EOF
+'
 chmod +x $1
