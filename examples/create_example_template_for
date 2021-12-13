@@ -13,7 +13,6 @@ write_data_to_file $1 'import_helper() {
 
 create_main_configuration()
     write_data_to_file main.tf <REPLACE_ME>
-EOF
 }
 
 create_outputs() {
