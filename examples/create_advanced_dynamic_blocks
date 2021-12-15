@@ -1,0 +1,73 @@
+import_helper() {
+    local helper_path=/usr/local/bin/helper
+    cat $helper_path || sudo curl https://raw.githubusercontent.com/jadecobra/arsenal/main/helper -o /usr/local/bin/helper
+    source $helper_path
+}
+
+create_main_configuration() {
+    write_data_to_file main.tf 'provider "aws" {
+  region = "us-east-1"
+}
+
+resource "aws_elastic_beanstalk_application" "application_name" {
+    name = "application_name"
+    description = "description"
+}
+
+resource "aws_elastic_beanstalk_environment" "application_environment" {
+    name = "application_name"
+    application = "${aws_elastic_beanstalk_application.application_name.name}"
+    solution_stack_name = "64bit Amazon Linux 2018.03 v2.11.4 running Go 1.12.6"
+
+    dynamic "setting" {
+        for_each = var.settings
+        content {
+            namespace = setting.value["namespace"]
+            name = setting.value["name"]
+            value = setting.value["value"]
+        }
+    }
+}
+'
+}
+
+create_variables() {
+    write_data_to_file variables.tf 'variable "settings" {
+    type = list(map(string))
+}'
+}
+
+create_tfvars() {
+    write_data_to_file terraform.tfvars 'settings = [
+    {
+        namespace = "aws:ec2:vpc"
+        name = "VPCId"
+        value = "vpc-12345678901234567"
+    },
+    {
+        namespace = "aws:ec2:vpc"
+        name = "Subnets"
+        value = "subnet-12345678901234567"
+    }
+]'
+}
+
+import_helper
+
+project_name="project_name"
+rm -rf $project_name
+create_and_go_to $project_name
+ls -a
+pwd
+
+create_main_configuration
+create_tfvars
+create_variables
+
+tfswitch
+export PATH=$PATH:$HOME/bin
+
+terraform init
+terraform fmt -recursive
+terraform validate
+terraform plan
