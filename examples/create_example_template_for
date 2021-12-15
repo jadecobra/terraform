@@ -39,7 +39,7 @@ tfswitch
 export PATH=$PATH:$HOME/bin
 
 terraform init
-terraform fmt
+terraform fmt -recursive
 terraform validate
 terraform plan
 '
