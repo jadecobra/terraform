@@ -65,16 +65,16 @@ resource "aws_instance" "foo" {
 }'
 }
 
-create_outputs() {
-    write_data_to_file outputs.tf 'output "private_dns" {
-    value = aws_instance.foo.private_dns
-}'
-}
-
 create_variables() {
     write_data_to_file variables.tf 'variable "vpc_name" {
     description = "name of the VPC"
     default = "first-class-expressions"
+}'
+}
+
+create_outputs() {
+    write_data_to_file outputs.tf 'output "private_dns" {
+    value = aws_instance.foo.private_dns
 }'
 }
 

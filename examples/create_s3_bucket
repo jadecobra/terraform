@@ -115,10 +115,6 @@ resource "aws_s3_bucket_policy" "bucket_policy" {
 '
 }
 
-create_outputs() {
-    write_data_to_file outputs.tf ''
-}
-
 create_variables() {
     write_data_to_file variables.tf 'variable "bucket_name" {
     description = "Name of the S3 Bucket"

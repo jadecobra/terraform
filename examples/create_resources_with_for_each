@@ -42,12 +42,6 @@ resource "aws_instance" "ubuntu" {
 }'
 }
 
-create_outputs() {
-    write_data_to_file outputs.tf 'output "public_ips" {
-    value = [for r in aws_instance.ubuntu: r.public_ip]
-}'
-}
-
 create_variables() {
     write_data_to_file variables.tf 'variable "aws_region" {
     description = "AWS Region"
@@ -78,9 +72,13 @@ variable "availability_zones" {
         e = "us-east-1e"
         f = "us-east-1f"
     }
+}'
 }
 
-'
+create_outputs() {
+    write_data_to_file outputs.tf 'output "public_ips" {
+    value = [for r in aws_instance.ubuntu: r.public_ip]
+}'
 }
 
 import_helper

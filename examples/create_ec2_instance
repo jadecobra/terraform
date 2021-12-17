@@ -41,12 +41,6 @@ resource "aws_instance" "ubuntu" {
 EOF
 }
 
-create_outputs() {
-    write_data_to_file outputs.tf 'output "public_dns" {
-    value = "${aws_instance.ubuntu.public_dns}"
-}'
-}
-
 create_variables() {
     write_data_to_file variables.tf 'variable "aws_region" {
     description = "AWS Region"
@@ -61,6 +55,12 @@ variable "instance_type" {
 variable "name" {
     description = "Name of the EC2 Instance"
     default = "TerraformProvisionedEC2"
+}'
+}
+
+create_outputs() {
+    write_data_to_file outputs.tf 'output "public_dns" {
+    value = "${aws_instance.ubuntu.public_dns}"
 }'
 }
 

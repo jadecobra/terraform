@@ -60,6 +60,37 @@ resource "aws_instance" "instance_name" {
 '
 }
 
+create_variables() {
+    write_data_to_file variables.tf 'variable "aws_region" {
+    description = "AWS Region"
+    type = string
+    default = "us-east-1"
+}
+
+variable "ec2_instance_type" {
+    description = "EC2 Instance Type"
+    type = string
+    default = "t2.micro"
+}
+
+variable "ubuntu_ami_name" {
+    description = "Name for Ubuntu AMI lookup"
+    type = list
+    default = ["ubuntu/images/hvm/ubuntu-trusty-14.04-amd64-server-*"]
+}
+
+variable "vpc_cidr_block" {
+    description = "VPC CIDR Block"
+    type = string
+    default = "172.16.0.0/16"
+}
+
+variable "subnet_cidr_block" {
+    description = "Subnet CIDR Block"
+    type = string
+    default = "172.16.0.0/24"
+}'
+}
 
 create_outputs() {
     write_data_to_file outputs.tf 'output "private_dns_with_old_splat_expression" {
@@ -95,37 +126,6 @@ output "ip_addresses_with_list_in_brackets" {
 '
 }
 
-create_variables() {
-    write_data_to_file variables.tf 'variable "aws_region" {
-    description = "AWS Region"
-    type = string
-    default = "us-east-1"
-}
-
-variable "ec2_instance_type" {
-    description = "EC2 Instance Type"
-    type = string
-    default = "t2.micro"
-}
-
-variable "ubuntu_ami_name" {
-    description = "Name for Ubuntu AMI lookup"
-    type = list
-    default = ["ubuntu/images/hvm/ubuntu-trusty-14.04-amd64-server-*"]
-}
-
-variable "vpc_cidr_block" {
-    description = "VPC CIDR Block"
-    type = string
-    default = "172.16.0.0/16"
-}
-
-variable "subnet_cidr_block" {
-    description = "Subnet CIDR Block"
-    type = string
-    default = "172.16.0.0/24"
-}'
-}
 
 import_helper
 
