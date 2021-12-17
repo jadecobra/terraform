@@ -1,0 +1,104 @@
+import_helper() {
+    local helper_path=/usr/local/bin/helper
+    cat $helper_path || sudo curl https://raw.githubusercontent.com/jadecobra/arsenal/main/helper -o /usr/local/bin/helper
+    source $helper_path
+}
+
+create_main_configuration() {
+    write_data_to_file main.tf 'terraform {
+    required_version = ">= 0.12.6"
+}
+
+provider "aws" {
+    region = var.aws_region
+}
+
+data "aws_ami" "ubuntu" {
+    most_recent = true
+
+    filter {
+        name = "name"
+        values = var.ubuntu_ami_name
+    }
+
+    filter {
+        name = "virtualization-type"
+        values = ["hvm"]
+    }
+
+    owners = ["099720109477"] # Canonical
+}
+
+resource "aws_instance" "ubuntu" {
+    for_each = var.availability_zones
+    ami = data.aws_ami.ubuntu.id
+    instance_type = var.ec2_instance_type
+    associate_public_ip_address = true
+    availability_zone = each.value
+
+    tags = {
+        Name = format("ec2-instance-in-availability-zone-%s", each.key)
+    }
+}'
+}
+
+create_outputs() {
+    write_data_to_file outputs.tf 'output "public_ips" {
+    value = [for r in aws_instance.ubuntu: r.public_ip]
+}'
+}
+
+create_variables() {
+    write_data_to_file variables.tf 'variable "aws_region" {
+    description = "AWS Region"
+    type = string
+    default = "us-east-1"
+}
+
+variable "ubuntu_ami_name" {
+    description = "Ubuntu AMI Name"
+    type = list
+    default = ["ubuntu/images/hvm-ssd/ubuntu-xenial-16.04-amd64-server-*"]
+}
+
+variable "ec2_instance_type" {
+    description = "EC2 Instance Type"
+    type = string
+    default = "t2.micro"
+}
+
+variable "availability_zones" {
+    description = "AWS Availability Zones"
+    type = map
+    default = {
+        a = "us-east-1a"
+        b = "us-east-1b"
+        c = "us-east-1c"
+        d = "us-east-1d"
+        e = "us-east-1e"
+        f = "us-east-1f"
+    }
+}
+
+'
+}
+
+import_helper
+
+project_name="project_name"
+rm -rf $project_name
+create_and_go_to $project_name
+ls -a
+pwd
+
+create_main_configuration
+create_outputs
+create_variables
+
+tfswitch
+export PATH=$PATH:$HOME/bin
+
+terraform init
+terraform fmt -recursive
+terraform validate
+terraform plan
