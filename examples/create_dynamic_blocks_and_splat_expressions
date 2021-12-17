@@ -39,13 +39,6 @@ resource "aws_security_group" "vault" {
 '
 }
 
-create_outputs() {
-    write_data_to_file outputs.tf 'output "from_ports" {
-    value = aws_security_group.vault.ingress[*].from_port
-    # value = aws_security_group.vault.ingress.*.from_port # the old way of writing the above
-}'
-}
-
 create_variables() {
     write_data_to_file variables.tf 'variable "aws_region" {
     description = "AWS Region"
@@ -56,6 +49,13 @@ variable "ingress_ports" {
     type = list(number)
     description = "list of ingress ports"
     default = [8200, 8201]
+}'
+}
+
+create_outputs() {
+    write_data_to_file outputs.tf 'output "from_ports" {
+    value = aws_security_group.vault.ingress[*].from_port
+    # value = aws_security_group.vault.ingress.*.from_port # the old way of writing the above
 }'
 }
 
