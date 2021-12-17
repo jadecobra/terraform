@@ -4,24 +4,33 @@ import_helper() {
     source $helper_path
 }
 
-import_helper
-write_data_to_file $1 'import_helper() {
-    local helper_path=/usr/local/bin/helper
-    cat $helper_path || sudo curl https://raw.githubusercontent.com/jadecobra/arsenal/main/helper -o /usr/local/bin/helper
-    source $helper_path
-}
-
 create_main_configuration() {
-    write_data_to_file main.tf <REPLACE_ME>
+    write_data_to_file main.tf 'terraform {
+    required_version = ">= 0.12.0"
+}'
 }
 
 create_variables() {
-    write_data_to_file variables.tf <REPLACE_ME>
+    write_data_to_file variables.tf 'variable "letters" {
+    description = "a list of letters"
+    type = list
+    default = ["array", "boolean", "computer", "dictionary"]
+}'
 }
 
 create_outputs() {
-    write_data_to_file outputs.tf <REPLACE_ME>
+    write_data_to_file outputs.tf 'output "how_to_make_an_uppercase_list_of_strings" {
+    value = [for l in var.letters: upper(l)]
 }
+
+output "how_to_make_an_upper_case_map_of_strings" {
+    value = {
+        for l in var.letters:
+        l => upper(l)
+    }
+}'
+}
+
 
 
 import_helper
@@ -43,5 +52,4 @@ terraform init
 terraform fmt -recursive
 terraform validate
 terraform plan
-'
-chmod +x $1
+terraform apply --auto-approve
