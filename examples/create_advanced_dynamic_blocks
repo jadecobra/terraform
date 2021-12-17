@@ -6,16 +6,16 @@ import_helper() {
 
 create_main_configuration() {
     write_data_to_file main.tf 'provider "aws" {
-  region = "us-east-1"
+  region = var.aws_region
 }
 
 resource "aws_elastic_beanstalk_application" "application_name" {
-    name = "application_name"
-    description = "description"
+    name = var.application_name
+    description = var.application_description
 }
 
 resource "aws_elastic_beanstalk_environment" "application_environment" {
-    name = "application_name"
+    name = var.application_name
     application = "${aws_elastic_beanstalk_application.application_name.name}"
     solution_stack_name = "64bit Amazon Linux 2018.03 v2.11.4 running Go 1.12.6"
 
@@ -32,7 +32,25 @@ resource "aws_elastic_beanstalk_environment" "application_environment" {
 }
 
 create_variables() {
-    write_data_to_file variables.tf 'variable "settings" {
+    write_data_to_file variables.tf 'variable "application_name" {
+    description = "The name of the application"
+    type = string
+    default = "application_name"
+}
+
+variable "application_description" {
+    description = "A description of what the application does"
+    type = string
+    default = "This tells the user what the application does"
+}
+
+variable "aws_region" {
+    description = "AWS Region"
+    type = string
+    default = "us-east-1"
+}
+
+variable "settings" {
     type = list(map(string))
 }'
 }
