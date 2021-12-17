@@ -1,0 +1,110 @@
+#This fails on M1 macs
+
+import_helper() {
+    local helper_path=/usr/local/bin/helper
+    cat $helper_path || sudo curl https://raw.githubusercontent.com/jadecobra/arsenal/main/helper -o /usr/local/bin/helper
+    source $helper_path
+}
+
+create_main_configuration() {
+    write_data_to_file main.tf 'terraform {
+    required_version = ">= 0.12.0"
+}
+
+data "template_file" "actual_vote" {
+    template = file("actual_vote.txt")
+
+    vars = {
+        voter = var.voter
+        candidate = var.candidate
+    }
+}
+
+# THis works with Template Provider 2.0
+data "template_file" "rigged_vote" {
+    template = file("rigged_vote.txt")
+
+    vars = {
+        vote = var.voter
+        candidate = var.candidate
+    }
+}
+'
+}
+
+create_variables() {
+    write_data_to_file variables.tf 'variable "names" {
+    description = "list of names"
+    default = ["Peter", "Paul", "Mary", "Joseph"]
+}
+
+variable "voter" {
+    description = "name of voter"
+    type = string
+    default = "Roger"
+}
+
+variable "candidate" {
+    description = "Name of Candidate voted for"
+    type = string
+    default = "Dan McCready"
+}'
+}
+
+create_outputs() {
+    write_data_to_file outputs.tf 'output all_names {
+    value = <<EOT
+
+%{ for name in var.names ~}
+${name}
+%{ endfor ~}
+EOT
+}
+
+output "just_mary" {
+    value = <<EOT
+%{ for name in var.names ~}
+%{ if name == "Mary"}${name}%{ endif ~}
+%{ endfor ~}
+EOT
+}
+
+output "the_actual_vote" {
+    value = data.template_file.actual_vote.rendered
+}
+
+output "the_rigged_vote" {
+    value = data.template_file.rigged_vote.rendered
+}'
+}
+
+create_rigged_vote() {
+    write_data_to_file rigged_vote.txt $1
+}
+
+create_actual_vote() {
+    write_data_to_file actual_vote.txt $1
+}
+
+import_helper
+
+project_name="project_name"
+rm -rf $project_name
+create_and_go_to $project_name
+ls -a
+pwd
+
+create_main_configuration
+create_variables
+create_outputs
+vote='I cast my vote for ${candidate}'
+create_rigged_vote $vote
+create_actual_vote $vote
+
+tfswitch
+export PATH=$PATH:$HOME/bin
+
+terraform init
+terraform fmt -recursive
+terraform validate
+terraform plan
