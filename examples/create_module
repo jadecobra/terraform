@@ -1,0 +1,210 @@
+import_helper() {
+    local helper_path=/usr/local/bin/helper
+    cat $helper_path || sudo curl https://raw.githubusercontent.com/jadecobra/arsenal/main/helper -o /usr/local/bin/helper
+    source $helper_path
+}
+
+create_module_main_configuration() {
+    write_data_to_file main.tf 'resource "aws_vpc" "vpc_name" {
+    cidr_block = var.network_config.vpc_cidr
+    tags = {
+        Name = var.network_config.vpc_name
+    }
+}
+
+resource "aws_subnet" "subnet_name" {
+    vpc_id = aws_vpc.vpc_name.id
+    cidr_block = var.network_config.subnet_cidr
+    tags = {
+        Name = var.network_config.subnet_name
+    }
+}
+'
+}
+
+create_module_variables() {
+    write_data_to_file variables.tf 'variable "network_config" {
+    type = object({
+        vpc_name = string
+        vpc_cidr = string
+        subnet_name = string
+        subnet_cidr = string
+    })
+}'
+}
+
+create_module_outputs() {
+    write_data_to_file outputs.tf 'output "vpc" {
+    value = aws_vpc.vpc_name
+}
+
+output "subnet_name" {
+    value = aws_subnet.subnet_name
+}
+
+output "subnet_id" {
+    value = aws_subnet.subnet_name.id
+}'
+}
+
+create_network_module() {
+    mkdir network
+    cd network
+    create_module_main_configuration
+    create_module_variables
+    create_module_outputs
+    cd ..
+}
+
+create_main_configuration() {
+    write_data_to_file main.tf 'terraform {
+    required_version = ">= 0.12.0"
+}
+
+provider "aws" {
+    region = var.aws_region
+}
+
+data "aws_ami" "image_name" {
+    most_recent = true
+
+    filter {
+        name = "name"
+        values = var.ubuntu_ami_names
+    }
+
+    owners = ["099720109477"]
+}
+
+module "network" {
+    source = "./network"
+    network_config = local.network_config
+}
+
+resource "aws_network_interface" "interface_name" {
+    subnet_id = module.network.subnet_id
+    private_ips = var.interface_ips
+
+    tags = {
+        Name = "interface_name"
+    }
+}
+
+resource "aws_instance" "instance_name" {
+    ami = data.aws_ami.image_name.image_id
+    instance_type = var.ec2_instance_type
+
+    tags = {
+        Name = "instance_name"
+    }
+
+    network_interface {
+        network_interface_id = aws_network_interface.interface_name.id
+        device_index = 0
+    }
+}'
+}
+
+create_variables() {
+    write_data_to_file variables.tf 'variable "aws_region" {
+    description = "AWS Region"
+    type = string
+    default = "us-east-1"
+}
+
+variable "vpc_name" {
+    description = "Name of VPC"
+    type = string
+    default = "vpc_name"
+}
+
+variable "vpc_cidr" {
+    description = "VPC CIDR"
+    type = string
+    default = "172.16.0.0/16"
+}
+
+variable "subnet_name" {
+    description = "name of subnet"
+    type = string
+    default = "subnet_name"
+}
+
+variable "subnet_cidr" {
+    description = "Subnet CIDR"
+    type = string
+    default = "172.16.10.0/24"
+}
+
+variable "interface_ips" {
+    description = "IP for network interface"
+    type = list
+    default = ["172.16.10.100"]
+}
+
+variable "ubuntu_ami_names" {
+    description = "Ubuntu AMI names"
+    type = list
+    default = ["ubuntu/images/hvm/ubuntu-trusty-14.04-amd64-server-*"]
+}
+
+variable "ec2_instance_type" {
+    description = "EC2 instance type"
+    type = string
+    default = "t2.micro"
+}
+
+locals {
+    network_config = {
+        vpc_cidr = var.vpc_cidr
+        subnet_cidr = var.subnet_cidr
+
+        vpc_name = var.vpc_name
+        subnet_name = var.subnet_name
+    }
+}
+'
+}
+
+create_outputs() {
+    write_data_to_file outputs.tf 'output "instance_private_dns" {
+    value = aws_instance.instance_name.private_dns
+}
+
+output "vpc" {
+    value = module.network.vpc
+}
+
+output "subnet" {
+    value = module.network.subnet_name
+}
+
+output "interface_security_groups" {
+    value = aws_network_interface.interface_name.security_groups
+}
+
+output "network_module" {
+    value = module.network
+}'
+}
+
+import_helper
+
+project_name="project_name"
+rm -rf $project_name
+create_and_go_to $project_name
+ls -a
+pwd
+
+create_network_module
+create_main_configuration
+create_variables
+create_outputs
+
+tfswitch
+export PATH=$PATH:$HOME/bin
+
+terraform init
+terraform fmt -recursive
+terraform validate
+terraform plan
