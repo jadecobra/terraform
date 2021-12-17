@@ -68,8 +68,8 @@ ls -a
 pwd
 
 create_main_configuration
-create_outputs
 create_variables
+create_outputs
 
 tfswitch
 export PATH=$PATH:$HOME/bin
