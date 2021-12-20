@@ -5,12 +5,8 @@ import_helper() {
 }
 
 create_main_configuration() {
-    write_data_to_file main.tf 'terraform {
-required_version=">= 0.11.0"
-}
-
-provider "aws" {
-    region = "${var.aws_region}"
+    write_data_to_file main.tf 'provider "aws" {
+    region = var.aws_region
 }
 
 data "aws_ami" "ubuntu" {
@@ -31,11 +27,11 @@ data "aws_ami" "ubuntu" {
 
 resource "aws_instance" "ubuntu" {
     ami = data.aws_ami.ubuntu.id
-    instance_type="${var.instance_type}"
-    availability_zone = "${var.aws_region}"
+    instance_type=var.instance_type
+    availability_zone = var.aws_region
 
     tags = {
-        Name="${var.name}"
+        Name=var.name
     }
 }'
 EOF
@@ -60,7 +56,7 @@ variable "name" {
 
 create_outputs() {
     write_data_to_file outputs.tf 'output "public_dns" {
-    value = "${aws_instance.ubuntu.public_dns}"
+    value = aws_instance.ubuntu.public_dns
 }'
 }
 
