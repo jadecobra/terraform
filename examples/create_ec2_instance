@@ -78,7 +78,7 @@ create_outputs
 tfswitch
 export PATH=\$PATH:\$HOME/bin
 
-terraform init
-terraform fmt -recursive
-terraform validate
-terraform plan
+~/bin/terraform init
+~/bin/terraform fmt -recursive
+~/bin/terraform validate
+~/bin/terraform plan
