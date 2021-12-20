@@ -14,7 +14,7 @@ data "aws_ami" "ubuntu" {
 
     filter {
         name = "name"
-        values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+        values = var.ubuntu_ami_names
     }
 
     filter {
@@ -43,13 +43,21 @@ create_variables() {
     default = "us-west-1"
 }
 
+variable "ubuntu_ami_names" {
+    description = "Ubuntu AMI"
+    type = list
+    default = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+}
+
 variable "instance_type" {
     description = "EC2 Instance Type"
+    type = string
     default = "t2.micro"
 }
 
 variable "name" {
     description = "Name of the EC2 Instance"
+    type = string
     default = "TerraformProvisionedEC2"
 }'
 }
