@@ -70,8 +70,8 @@ create_outputs() {
 
 import_helper
 projectName="aws_ec2_instance"
-rm -rf \$projectName
-create_and_go_to \$projectName
+rm -rf $projectName
+create_and_go_to $projectName
 ls -a
 pwd
 
