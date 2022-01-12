@@ -1,6 +1,6 @@
 import_helper() {
     local helper_path=/usr/local/bin/helper
-    cat $helper_path || sudo curl https://raw.githubusercontent.com/jadecobra/arsenal/main/helper -o /usr/local/bin/helper
+    cat $helper_path || sudo curl https://raw.githubusercontent.com/jadecobra/arsenal/main/helper -o $helper_path
     source $helper_path
 }
 
