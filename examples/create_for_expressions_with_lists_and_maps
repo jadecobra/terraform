@@ -32,7 +32,7 @@ output "how_to_make_an_upper_case_map_of_strings" {
 }
 
 
-
+clear
 import_helper
 
 project_name="project_name"
