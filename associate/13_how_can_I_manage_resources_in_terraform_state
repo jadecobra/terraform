@@ -3,10 +3,9 @@ source helper
 git clone https://github.com/hashicorp/learn-terraform-state.git
 cd learn-terraform-state
 
-display main.tf
+cat main.tf
 
-cat EOF <<
-terraform {
+cat EOF <<terraform {
     required_providers {
         aws = {
             source  = "hashicorp/aws"
