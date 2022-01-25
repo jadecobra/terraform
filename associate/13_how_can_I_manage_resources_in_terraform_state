@@ -1,5 +1,10 @@
-source helper
+import_helper() {
+    local helper_path=/usr/local/bin/helper
+    cat $helper_path || sudo curl https://raw.githubusercontent.com/jadecobra/arsenal/main/helper -o /usr/local/bin/helper
+    source $helper_path
+}
 
+import_helper
 git clone https://github.com/hashicorp/learn-terraform-state.git
 cd learn-terraform-state
 
